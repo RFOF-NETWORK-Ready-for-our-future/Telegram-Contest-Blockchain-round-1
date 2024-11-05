@@ -1487,6 +1487,8 @@ td::Status ValidatorEngine::load_global_config() {
   }
   validator_options_.write().set_fast_state_serializer_enabled(fast_state_serializer_enabled_);
 
+  validator_options_.write().set_cpu_threads_count(cpu_threads_count_);
+
   return td::Status::OK();
 }
 
@@ -4235,6 +4237,7 @@ int main(int argc, char *argv[]) {
         threads = v;
         return td::Status::OK();
       });
+  acts.push_back([&x, &threads]() { td::actor::send_closure(x, &ValidatorEngine::set_cpu_threads_count, threads); });
   p.add_checked_option('u', "user", "change user", [&](td::Slice user) { return td::change_user(user.str()); });
   p.add_checked_option('\0', "shutdown-at", "stop validator at the given time (unix timestamp)", [&](td::Slice arg) {
     TRY_RESULT(at, td::to_integer_safe<td::uint32>(arg));
