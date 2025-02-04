@@ -65,7 +65,6 @@ class Collator final : public td::actor::Actor {
   bool libraries_changed_{false};
   bool prev_key_block_exists_{false};
   bool is_hardfork_{false};
-  UnixTime min_ts;
   BlockIdExt min_mc_block_id;
   std::vector<BlockIdExt> prev_blocks;
   std::vector<Ref<ShardState>> prev_states;
@@ -77,7 +76,13 @@ class Collator final : public td::actor::Actor {
   td::Timestamp timeout;
   td::Timestamp queue_cleanup_timeout_, soft_timeout_, medium_timeout_;
   td::Promise<BlockCandidate> main_promise;
+ half-limits
   int repeating_;
+
+  unsigned mode_ = 0;
+  int attempt_idx_;
+  bool allow_repeat_collation_ = false;
+ master
   ton::BlockSeqno last_block_seqno{0};
   ton::BlockSeqno prev_mc_block_seqno{0};
   ton::BlockSeqno new_block_seqno{0};
@@ -90,10 +95,17 @@ class Collator final : public td::actor::Actor {
   static constexpr bool shard_splitting_enabled = true;
 
  public:
+ half-limits
   Collator(ShardIdFull shard, bool is_hardfork, td::uint32 min_ts, BlockIdExt min_masterchain_block_id,
            std::vector<BlockIdExt> prev, Ref<ValidatorSet> validator_set, Ed25519_PublicKey collator_id,
            Ref<CollatorOptions> collator_opts, td::actor::ActorId<ValidatorManager> manager, td::Timestamp timeout,
            td::Promise<BlockCandidate> promise, int repeating);
+
+  Collator(ShardIdFull shard, bool is_hardfork, BlockIdExt min_masterchain_block_id, std::vector<BlockIdExt> prev,
+           Ref<ValidatorSet> validator_set, Ed25519_PublicKey collator_id, Ref<CollatorOptions> collator_opts,
+           td::actor::ActorId<ValidatorManager> manager, td::Timestamp timeout, td::Promise<BlockCandidate> promise,
+           td::CancellationToken cancellation_token, unsigned mode, int attempt_idx);
+ master
   ~Collator() override = default;
   bool is_busy() const {
     return busy_;
@@ -179,6 +191,7 @@ class Collator final : public td::actor::Actor {
   td::RefInt256 masterchain_create_fee_, basechain_create_fee_;
   std::unique_ptr<block::BlockLimits> block_limits_;
   std::unique_ptr<block::BlockLimitStatus> block_limit_status_;
+  int block_limit_class_ = 0;
   ton::LogicalTime min_new_msg_lt{std::numeric_limits<td::uint64>::max()};
   block::CurrencyCollection total_balance_, old_total_balance_, total_validator_fees_;
   block::CurrencyCollection global_balance_, old_global_balance_, import_created_{0};
@@ -218,6 +231,10 @@ class Collator final : public td::actor::Actor {
   bool dispatch_queue_total_limit_reached_ = false;
   td::uint64 defer_out_queue_size_limit_;
   td::uint64 hard_defer_out_queue_size_limit_;
+
+  std::unique_ptr<vm::AugmentedDictionary> account_dict_estimator_;
+  std::set<td::Bits256> account_dict_estimator_added_accounts_;
+  unsigned account_dict_ops_{0};
 
   bool msg_metadata_enabled_ = false;
   bool deferring_messages_enabled_ = false;
@@ -321,6 +338,8 @@ class Collator final : public td::actor::Actor {
   bool insert_out_msg(Ref<vm::Cell> out_msg);
   bool insert_out_msg(Ref<vm::Cell> out_msg, td::ConstBitPtr msg_hash);
   bool register_out_msg_queue_op(bool force = false);
+  bool register_dispatch_queue_op(bool force = false);
+  bool update_account_dict_estimation(const block::transaction::Transaction& trans);
   bool update_min_mc_seqno(ton::BlockSeqno some_mc_seqno);
   bool combine_account_transactions();
   bool update_public_libraries();
@@ -351,9 +370,13 @@ class Collator final : public td::actor::Actor {
   bool create_block();
   Ref<vm::Cell> collate_shard_block_descr_set();
   bool create_collated_data();
+
   bool create_block_candidate();
   void return_block_candidate(td::Result<td::Unit> saved);
   bool update_last_proc_int_msg(const std::pair<ton::LogicalTime, ton::Bits256>& new_lt_hash);
+
+  td::CancellationToken cancellation_token_;
+  bool check_cancelled();
 
  public:
   static td::uint32 get_skip_externals_queue_size();

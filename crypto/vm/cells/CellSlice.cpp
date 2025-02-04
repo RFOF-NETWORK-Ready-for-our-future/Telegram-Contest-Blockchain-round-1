@@ -264,7 +264,7 @@ bool CellSlice::advance_ext(unsigned bits, unsigned refs) {
 }
 
 bool CellSlice::advance_ext(unsigned bits_refs) {
-  return advance_ext(bits_refs >> 16, bits_refs & 0xffff);
+  return advance_ext(bits_refs & 0xffff, bits_refs >> 16);
 }
 
 // (PRIVATE)
@@ -976,7 +976,7 @@ void CellSlice::dump(std::ostream& os, int level, bool endl) const {
   os << "; refs: " << refs_st << ".." << refs_en;
   if (level > 2) {
     char tmp[64];
-    std::sprintf(tmp, "; ptr=data+%ld; z=%016llx",
+    std::snprintf(tmp, sizeof(tmp), "; ptr=data+%ld; z=%016llx",
                  static_cast<long>(ptr && cell.not_null() ? ptr - cell->get_data() : -1), static_cast<long long>(z));
     os << tmp << " (have " << size() << " bits; " << zd << " preloaded)";
   }

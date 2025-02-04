@@ -1,16 +1,12 @@
-## 2024.08 Update
-
-1. Introduction of dispatch queues, message envelopes with transaction chain metadata, and explicitly stored msg_queue size, which will be activated by `Config8.version >= 8` and new `Config8.capabilities` bits: `capStoreOutMsgQueueSize`, `capMsgMetadata`, `capDeferMessages`. 
-2. A number of changes to transcation executor which will activated for `Config8.version >= 8`:
-    - Check mode on invalid `action_send_msg`. Ignore action if `IGNORE_ERROR` (+2) bit is set, bounce if `BOUNCE_ON_FAIL` (+16) bit is set.
-    - Slightly change random seed generation to fix mix of `addr_rewrite` and `addr`.
-    - Fill in `skipped_actions` for both invalid and valid messages with `IGNORE_ERROR` mode that can't be sent.
-    - Allow unfreeze through external messages.
-    - Don't use user-provided `fwd_fee` and `ihr_fee` for internal messages.
-3. A few issues with broadcasts were fixed: stop on receiving last piece, response to AdnlMessageCreateChannel
-4. A number of fixes and improvements for emulator and tonlib: correct work with config_addr, not accepted externals, bounces, debug ops gas consumption, added version and c5 dump, fixed tonlib crashes
-5. Added new flags and commands to the node, in particular `--fast-state-serializer`, `getcollatoroptionsjson`, `setcollatoroptionsjson`
-
-Besides the work of the core team, this update is based on the efforts of @krigga (emulator), stonfi team, in particular @dbaranovstonfi and @hey-researcher (emulator), and  @loeul, @xiaoxianBoy, @simlecode (typos in comments and docs).
+## 2025.02 Update
+1. Series of improvement/fixes for `Config8.version >= 9`, check [GlobalVersions.md](./doc/GlobalVersions.md)
+2. Fix for better discovery of updated nodes' (validators') IPs: retry dht queries
+3. Series of improvements for extra currency adoption: fixed c7 in rungetmethod, reserve modes
+4. TVM: Fix processing continuation control data on deep jump
+5. A few fixes of tl-b schemes: crc computation, incorrect tag for merkle proofs, advance_ext, NatWidth print
+6. Emulator improvements: fix setting libraries,  extracurrency support
+7. Increase of gas limit for unlocking highload-v2 wallets locked in the beginning of 2024
+8. Validator console improvement: dashed names, better shard formats
 
 
+Besides the work of the core team, this update is based on the efforts of  @dbaranovstonfi from StonFi(libraries in emulator), @Rexagon (ret on deep jumps), @tvorogme from DTon (`advance_ext`), Nan from Zellic (`stk_und` and JNI)
