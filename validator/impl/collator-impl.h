@@ -76,9 +76,13 @@ class Collator final : public td::actor::Actor {
   td::Timestamp timeout;
   td::Timestamp queue_cleanup_timeout_, soft_timeout_, medium_timeout_;
   td::Promise<BlockCandidate> main_promise;
+ half-limits
+  int repeating_;
+
   unsigned mode_ = 0;
   int attempt_idx_;
   bool allow_repeat_collation_ = false;
+ master
   ton::BlockSeqno last_block_seqno{0};
   ton::BlockSeqno prev_mc_block_seqno{0};
   ton::BlockSeqno new_block_seqno{0};
@@ -91,10 +95,17 @@ class Collator final : public td::actor::Actor {
   static constexpr bool shard_splitting_enabled = true;
 
  public:
+ half-limits
+  Collator(ShardIdFull shard, bool is_hardfork, td::uint32 min_ts, BlockIdExt min_masterchain_block_id,
+           std::vector<BlockIdExt> prev, Ref<ValidatorSet> validator_set, Ed25519_PublicKey collator_id,
+           Ref<CollatorOptions> collator_opts, td::actor::ActorId<ValidatorManager> manager, td::Timestamp timeout,
+           td::Promise<BlockCandidate> promise, int repeating);
+
   Collator(ShardIdFull shard, bool is_hardfork, BlockIdExt min_masterchain_block_id, std::vector<BlockIdExt> prev,
            Ref<ValidatorSet> validator_set, Ed25519_PublicKey collator_id, Ref<CollatorOptions> collator_opts,
            td::actor::ActorId<ValidatorManager> manager, td::Timestamp timeout, td::Promise<BlockCandidate> promise,
            td::CancellationToken cancellation_token, unsigned mode, int attempt_idx);
+ master
   ~Collator() override = default;
   bool is_busy() const {
     return busy_;

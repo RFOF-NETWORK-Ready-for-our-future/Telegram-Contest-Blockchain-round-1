@@ -83,8 +83,12 @@ void run_validate_query(ShardIdFull shard, BlockIdExt min_masterchain_block_id, 
 void run_collate_query(ShardIdFull shard, const BlockIdExt& min_masterchain_block_id, std::vector<BlockIdExt> prev,
                        Ed25519_PublicKey creator, td::Ref<ValidatorSet> validator_set,
                        td::Ref<CollatorOptions> collator_opts, td::actor::ActorId<ValidatorManager> manager,
+ half-limits
+                       td::Timestamp timeout, td::Promise<BlockCandidate> promise, int repeating = 0);
+  
                        td::Timestamp timeout, td::Promise<BlockCandidate> promise,
                        td::CancellationToken cancellation_token, unsigned mode, int attempt_idx = 0);
+  master
 void run_collate_hardfork(ShardIdFull shard, const BlockIdExt& min_masterchain_block_id, std::vector<BlockIdExt> prev,
                           td::actor::ActorId<ValidatorManager> manager, td::Timestamp timeout,
                           td::Promise<BlockCandidate> promise);

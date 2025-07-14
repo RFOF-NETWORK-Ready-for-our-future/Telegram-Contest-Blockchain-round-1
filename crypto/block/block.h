@@ -256,7 +256,6 @@ struct ParamLimits {
     }
   }
 
- private:
   std::array<td::uint32, limits_cnt> limits_;
 };
 
