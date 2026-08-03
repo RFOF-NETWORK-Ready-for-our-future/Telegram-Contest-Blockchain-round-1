@@ -2,6 +2,10 @@ name: MacOS-13 TON build (portable, x86-64)
 
 on: [push,workflow_dispatch,workflow_call]
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   build:
     runs-on: macos-13
