@@ -2,6 +2,9 @@ name: MacOS TON build (shared, x86-64)
 
 on: [push,workflow_dispatch,workflow_call]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: macos-13
