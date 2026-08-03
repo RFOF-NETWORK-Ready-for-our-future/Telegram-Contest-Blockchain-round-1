@@ -2,6 +2,9 @@ name: MacOS-15 TON build (shared, arm64)
 
 on: [push,workflow_dispatch,workflow_call]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: macos-15
