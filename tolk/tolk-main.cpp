@@ -169,18 +169,28 @@ td::Result<std::string> fs_read_callback(CompilerSettings::FsReadCallbackKind ki
       return res_realpath;
     }
     case CompilerSettings::FsReadCallbackKind::ReadFile: {
+      int fd = open(query, O_RDONLY);  // query here is already resolved realpath
+      if (fd == -1) {
+        return td::Status::Error(std::string{"cannot open file "} + query);
+      }
+
       struct stat f_stat;
-      int res = stat(query, &f_stat);   // query here is already resolved realpath
-      if (res != 0 || (f_stat.st_mode & S_IFMT) != S_IFREG) {
+      if (fstat(fd, &f_stat) != 0 || (f_stat.st_mode & S_IFMT) != S_IFREG) {
+        close(fd);
         return td::Status::Error(std::string{"cannot open file "} + query);
       }
 
       size_t file_size = static_cast<size_t>(f_stat.st_size);
       std::string str;
       str.resize(file_size);
-      FILE* f = fopen(query, "rb");
+      FILE* f = fdopen(fd, "rb");
+      if (!f) {
+        close(fd);
+        return td::Status::Error(std::string{"cannot open file "} + query);
+      }
+
       fread(str.data(), file_size, 1, f);
-      fclose(f);
+      fclose(f);  // fd is also closed by fclose
       return std::move(str);
     }
     default: {
