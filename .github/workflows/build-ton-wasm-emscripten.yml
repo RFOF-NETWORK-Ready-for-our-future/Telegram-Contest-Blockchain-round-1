@@ -2,6 +2,9 @@ name: Emscripten TON build (wasm)
 
 on: [push,workflow_dispatch,workflow_call]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-22.04
